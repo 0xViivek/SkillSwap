@@ -32,7 +32,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'], $_POST['req
         }
     }
 
-    header('Location: /SkillSwap/requests.php');
+    header('Location: /requests.php');
     exit;
 }
 
@@ -155,7 +155,7 @@ include __DIR__ . '/includes/header.php';
         <div class="card text-center" style="padding:2.5rem;">
             <p style="font-size:2.5rem;">📤</p>
             <p class="text-muted mt-1">You haven't sent any requests yet.</p>
-            <a href="/SkillSwap/matches.php" class="btn btn-primary mt-2">Find Matches →</a>
+            <a href="/matches.php" class="btn btn-primary mt-2">Find Matches →</a>
         </div>
     <?php else: ?>
         <?php foreach ($outgoing as $req):
@@ -197,7 +197,7 @@ include __DIR__ . '/includes/header.php';
             <?php elseif ($req['status'] === 'rejected'): ?>
                 <p class="text-muted" style="font-size:0.85rem; margin-top:0.25rem;">
                     <?= htmlspecialchars($receiver['name']) ?> rejected this request.
-                    <a href="/SkillSwap/matches.php">Send another →</a>
+                    <a href="/matches.php">Send another →</a>
                 </p>
             <?php endif; ?>
         </div>

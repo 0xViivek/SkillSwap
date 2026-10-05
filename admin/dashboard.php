@@ -55,7 +55,7 @@ include __DIR__ . '/../includes/header.php';
     <div class="card">
         <div class="d-flex justify-between align-center mb-2">
             <h2 class="card-title" style="margin-bottom:0;">Recent Students</h2>
-            <a href="/SkillSwap/admin/users.php" class="text-muted" style="font-size:0.85rem;">View all →</a>
+            <a href="/admin/users.php" class="text-muted" style="font-size:0.85rem;">View all →</a>
         </div>
         <?php if (empty($recent)): ?>
             <p class="text-muted">No students yet.</p>
@@ -84,7 +84,7 @@ include __DIR__ . '/../includes/header.php';
     <div class="card">
         <div class="d-flex justify-between align-center mb-2">
             <h2 class="card-title" style="margin-bottom:0;">Recent Requests</h2>
-            <a href="/SkillSwap/admin/requests.php" class="text-muted" style="font-size:0.85rem;">View all →</a>
+            <a href="/admin/requests.php" class="text-muted" style="font-size:0.85rem;">View all →</a>
         </div>
         <?php if (empty($recentReq)): ?>
             <p class="text-muted">No requests yet.</p>

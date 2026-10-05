@@ -50,7 +50,7 @@ include __DIR__ . '/includes/header.php';
             <?= htmlspecialchars($user['department']) ?> &middot; Year <?= $user['year'] ?>
         </p>
     </div>
-    <a href="/SkillSwap/skills.php" class="btn btn-primary">+ Add Skills</a>
+    <a href="/skills.php" class="btn btn-primary">+ Add Skills</a>
 </div>
 
 <!-- Stat cards -->
@@ -89,7 +89,7 @@ include __DIR__ . '/includes/header.php';
     <div>
         <div class="d-flex justify-between align-center mb-1">
             <h2 style="font-size:1.1rem; font-weight:600;">🎯 Your Best Matches</h2>
-            <a href="/SkillSwap/matches.php" class="text-muted" style="font-size:0.85rem;">View all →</a>
+            <a href="/matches.php" class="text-muted" style="font-size:0.85rem;">View all →</a>
         </div>
 
         <?php if (empty($topMatches)): ?>
@@ -97,7 +97,7 @@ include __DIR__ . '/includes/header.php';
                 <p style="font-size:2rem;">🤝</p>
                 <p class="text-muted mt-1">No matches yet.</p>
                 <p class="text-muted" style="font-size:0.82rem;">Add skills you can teach and want to learn to find matches.</p>
-                <a href="/SkillSwap/skills.php" class="btn btn-primary btn-sm mt-2">Add Skills</a>
+                <a href="/skills.php" class="btn btn-primary btn-sm mt-2">Add Skills</a>
             </div>
         <?php else: ?>
             <?php foreach ($topMatches as $match):
@@ -129,7 +129,7 @@ include __DIR__ . '/includes/header.php';
                 <?php endif; ?>
 
                 <div class="mt-1">
-                    <a href="/SkillSwap/matches.php" class="btn btn-outline btn-sm">View Match →</a>
+                    <a href="/matches.php" class="btn btn-outline btn-sm">View Match →</a>
                 </div>
             </div>
             <?php endforeach; ?>
@@ -140,7 +140,7 @@ include __DIR__ . '/includes/header.php';
     <div>
         <div class="d-flex justify-between align-center mb-1">
             <h2 style="font-size:1.1rem; font-weight:600;">📬 Incoming Requests</h2>
-            <a href="/SkillSwap/requests.php" class="text-muted" style="font-size:0.85rem;">View all →</a>
+            <a href="/requests.php" class="text-muted" style="font-size:0.85rem;">View all →</a>
         </div>
 
         <?php if (empty($pendingReceived)): ?>
@@ -163,7 +163,7 @@ include __DIR__ . '/includes/header.php';
                     Offers: <span class="skill-pill pill-teach"><?= htmlspecialchars($offeredSkill['name']) ?></span>
                     &nbsp; Wants: <span class="skill-pill pill-learn"><?= htmlspecialchars($wantedSkill['name']) ?></span>
                 </p>
-                <a href="/SkillSwap/requests.php" class="btn btn-success btn-sm mt-1">Respond →</a>
+                <a href="/requests.php" class="btn btn-success btn-sm mt-1">Respond →</a>
             </div>
             <?php endforeach; ?>
         <?php endif; ?>
@@ -172,7 +172,7 @@ include __DIR__ . '/includes/header.php';
         <h2 style="font-size:1.1rem; font-weight:600; margin-top:1.5rem; margin-bottom:0.75rem;">🧠 My Skills</h2>
         <div class="card">
             <?php if (empty($teachSkills) && empty($learnSkills)): ?>
-                <p class="text-muted text-center">No skills added yet. <a href="/SkillSwap/skills.php">Add now →</a></p>
+                <p class="text-muted text-center">No skills added yet. <a href="/skills.php">Add now →</a></p>
             <?php else: ?>
                 <?php if (!empty($teachSkills)): ?>
                     <p style="font-size:0.82rem; font-weight:600; color:var(--gray-600); margin-bottom:0.4rem;">CAN TEACH</p>
@@ -196,7 +196,7 @@ include __DIR__ . '/includes/header.php';
                     </div>
                 <?php endif; ?>
 
-                <a href="/SkillSwap/skills.php" class="btn btn-outline btn-sm mt-2">Manage Skills →</a>
+                <a href="/skills.php" class="btn btn-outline btn-sm mt-2">Manage Skills →</a>
             <?php endif; ?>
         </div>
 

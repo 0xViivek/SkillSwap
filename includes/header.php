@@ -3,13 +3,17 @@
  * SkillSwap — Shared HTML header
  * File: includes/header.php
  *
- * Include at the top of every page AFTER session_start().
- * Pass $pageTitle before including:
- *   $pageTitle = 'Dashboard';
- *   include 'includes/header.php';
+ * BASE_URL is auto-detected from the server so links work in
+ * any subfolder (e.g. localhost/SkillSwap/ or localhost/).
  */
 if (!isset($pageTitle)) $pageTitle = 'SkillSwap';
-$currentUser = function_exists('currentUser') ? currentUser() : null;
+
+// Auto-detect the subfolder — works in any XAMPP setup
+// e.g. if URL is localhost/SkillSwap/dashboard.php → BASE = /SkillSwap
+$scriptDir  = str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME']));
+// Walk up to project root (remove /admin subfolder if present)
+$base       = rtrim(str_replace('/admin', '', $scriptDir), '/');
+define('BASE_URL', $base);  // e.g. "/SkillSwap"
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -17,33 +21,33 @@ $currentUser = function_exists('currentUser') ? currentUser() : null;
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= htmlspecialchars($pageTitle) ?> — SkillSwap</title>
-    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="<?= BASE_URL ?>/css/style.css">
 </head>
 <body>
 
 <nav class="navbar">
-    <a class="navbar-brand" href="/index.php">🔄 SkillSwap</a>
+    <a class="navbar-brand" href="<?= BASE_URL ?>/index.php">🔄 SkillSwap</a>
 
     <?php if (isset($_SESSION['user_id'])): ?>
         <ul class="nav-links">
             <?php if ($_SESSION['user_role'] === 'admin'): ?>
-                <li><a href="/admin/dashboard.php" <?= str_contains($_SERVER['REQUEST_URI'], 'admin/dashboard') ? 'class="active"' : '' ?>>Dashboard</a></li>
-                <li><a href="/admin/users.php"     <?= str_contains($_SERVER['REQUEST_URI'], 'admin/users')    ? 'class="active"' : '' ?>>Students</a></li>
-                <li><a href="/admin/requests.php"  <?= str_contains($_SERVER['REQUEST_URI'], 'admin/requests') ? 'class="active"' : '' ?>>Requests</a></li>
+                <li><a href="<?= BASE_URL ?>/admin/dashboard.php" <?= str_contains($_SERVER['REQUEST_URI'], 'admin/dashboard') ? 'class="active"' : '' ?>>Dashboard</a></li>
+                <li><a href="<?= BASE_URL ?>/admin/users.php"     <?= str_contains($_SERVER['REQUEST_URI'], 'admin/users')    ? 'class="active"' : '' ?>>Students</a></li>
+                <li><a href="<?= BASE_URL ?>/admin/requests.php"  <?= str_contains($_SERVER['REQUEST_URI'], 'admin/requests') ? 'class="active"' : '' ?>>Requests</a></li>
             <?php else: ?>
-                <li><a href="/dashboard.php" <?= str_contains($_SERVER['REQUEST_URI'], 'dashboard') ? 'class="active"' : '' ?>>Dashboard</a></li>
-                <li><a href="/skills.php"    <?= str_contains($_SERVER['REQUEST_URI'], 'skills')    ? 'class="active"' : '' ?>>Skills</a></li>
-                <li><a href="/matches.php"   <?= str_contains($_SERVER['REQUEST_URI'], 'matches')   ? 'class="active"' : '' ?>>Matches</a></li>
-                <li><a href="/requests.php"  <?= str_contains($_SERVER['REQUEST_URI'], 'requests')  ? 'class="active"' : '' ?>>Requests</a></li>
-                <li><a href="/profile.php"   <?= str_contains($_SERVER['REQUEST_URI'], 'profile')   ? 'class="active"' : '' ?>>Profile</a></li>
+                <li><a href="<?= BASE_URL ?>/dashboard.php" <?= str_contains($_SERVER['REQUEST_URI'], 'dashboard') ? 'class="active"' : '' ?>>Dashboard</a></li>
+                <li><a href="<?= BASE_URL ?>/skills.php"    <?= str_contains($_SERVER['REQUEST_URI'], 'skills')    ? 'class="active"' : '' ?>>Skills</a></li>
+                <li><a href="<?= BASE_URL ?>/matches.php"   <?= str_contains($_SERVER['REQUEST_URI'], 'matches')   ? 'class="active"' : '' ?>>Matches</a></li>
+                <li><a href="<?= BASE_URL ?>/requests.php"  <?= str_contains($_SERVER['REQUEST_URI'], 'requests')  ? 'class="active"' : '' ?>>Requests</a></li>
+                <li><a href="<?= BASE_URL ?>/profile.php"   <?= str_contains($_SERVER['REQUEST_URI'], 'profile')   ? 'class="active"' : '' ?>>Profile</a></li>
             <?php endif; ?>
-            <li><a href="/logout.php">Logout</a></li>
+            <li><a href="<?= BASE_URL ?>/logout.php">Logout</a></li>
         </ul>
         <span class="nav-user">👤 <?= htmlspecialchars($_SESSION['user_name']) ?></span>
     <?php else: ?>
         <ul class="nav-links">
-            <li><a href="/login.php">Login</a></li>
-            <li><a href="/register.php" class="btn btn-primary btn-sm">Register</a></li>
+            <li><a href="<?= BASE_URL ?>/login.php">Login</a></li>
+            <li><a href="<?= BASE_URL ?>/register.php" class="btn btn-primary btn-sm">Register</a></li>
         </ul>
     <?php endif; ?>
 </nav>

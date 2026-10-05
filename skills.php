@@ -26,7 +26,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             $errors[] = 'You already have that skill in that category.';
         } else {
             $_SESSION['flash'] = ['type' => 'success', 'msg' => 'Skill added successfully!'];
-            header('Location: /SkillSwap/skills.php');
+            header('Location: /skills.php');
             exit;
         }
     }
@@ -38,7 +38,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     if ($userSkillId > 0) {
         removeUserSkill($userSkillId);
         $_SESSION['flash'] = ['type' => 'info', 'msg' => 'Skill removed.'];
-        header('Location: /SkillSwap/skills.php');
+        header('Location: /skills.php');
         exit;
     }
 }

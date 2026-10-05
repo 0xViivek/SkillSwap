@@ -9,7 +9,7 @@ require_once __DIR__ . '/includes/auth.php';
 
 // Already logged in? Redirect to dashboard
 if (isLoggedIn()) {
-    header('Location: ' . (isAdmin() ? '/SkillSwap/admin/dashboard.php' : '/SkillSwap/dashboard.php'));
+    header('Location: ' . (isAdmin() ? '/admin/dashboard.php' : '/dashboard.php'));
     exit;
 }
 
@@ -27,10 +27,10 @@ include __DIR__ . '/includes/header.php';
         SkillSwap connects students based on what they can teach and what they want to learn — automatically finding the best mutual matches.
     </p>
     <div class="d-flex gap-2" style="justify-content:center; flex-wrap:wrap;">
-        <a href="/SkillSwap/register.php" class="btn btn-primary" style="font-size:1rem; padding:0.65rem 2rem;">
+        <a href="/register.php" class="btn btn-primary" style="font-size:1rem; padding:0.65rem 2rem;">
             Get Started Free
         </a>
-        <a href="/SkillSwap/login.php" class="btn btn-outline" style="font-size:1rem; padding:0.65rem 2rem;">
+        <a href="/login.php" class="btn btn-outline" style="font-size:1rem; padding:0.65rem 2rem;">
             Login
         </a>
     </div>
@@ -126,7 +126,7 @@ include __DIR__ . '/includes/header.php';
 <div style="text-align:center; padding:2rem 1rem 4rem;">
     <h2 style="font-size:1.5rem; font-weight:700; margin-bottom:0.5rem;">Ready to swap skills?</h2>
     <p class="text-muted mb-2">Join your college's skill exchange network today.</p>
-    <a href="/SkillSwap/register.php" class="btn btn-primary" style="font-size:1rem; padding:0.65rem 2.5rem;">
+    <a href="/register.php" class="btn btn-primary" style="font-size:1rem; padding:0.65rem 2.5rem;">
         Create Your Account →
     </a>
 </div>

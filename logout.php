@@ -16,5 +16,5 @@ if (isLoggedIn()) {
 session_start();
 $_SESSION['flash'] = ['type' => 'info', 'msg' => 'You have been logged out successfully.'];
 
-header('Location: /SkillSwap/login.php');
+header('Location: login.php');
 exit;

@@ -28,7 +28,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Refresh session name
         $_SESSION['user_name'] = $name;
         $_SESSION['flash'] = ['type' => 'success', 'msg' => 'Profile updated successfully!'];
-        header('Location: /SkillSwap/profile.php');
+        header('Location: /profile.php');
         exit;
     }
 
@@ -116,7 +116,7 @@ include __DIR__ . '/includes/header.php';
         <div class="card">
             <div class="d-flex justify-between align-center mb-1">
                 <h2 class="card-title" style="margin-bottom:0;">Skills Overview</h2>
-                <a href="/SkillSwap/skills.php" class="btn btn-outline btn-sm">Manage →</a>
+                <a href="/skills.php" class="btn btn-outline btn-sm">Manage →</a>
             </div>
 
             <p style="font-size:0.82rem; font-weight:600; color:var(--gray-600); margin-bottom:0.4rem; margin-top:0.75rem;">
