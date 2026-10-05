@@ -1,0 +1,15 @@
+1|C++|Programming
+2|Python|Programming
+3|Java|Programming
+4|HTML|Web Development
+5|CSS|Web Development
+6|JavaScript|Web Development
+7|PHP|Web Development
+8|Git|Tools
+9|Graphic Design|Design
+10|Video Editing|Creative
+11|Photography|Creative
+12|Public Speaking|Soft Skills
+13|Excel|Productivity
+14|UI UX Design|Design
+15|Data Structures|Programming

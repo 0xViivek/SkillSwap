@@ -1,0 +1,27 @@
+# SkillSwap — .gitignore
+
+# Data files — do NOT commit real user data to GitHub
+# Keep the seed files but ignore runtime-generated content
+# (Comment out the lines below if you want to commit seed data for demo)
+# data/users.txt
+# data/requests.txt
+# data/user_skills.txt
+
+# Test / debug files — delete before demo anyway
+test_functions.php
+debug_*.php
+
+# XAMPP / OS junk
+Thumbs.db
+.DS_Store
+desktop.ini
+*.log
+
+# IDE files
+.vscode/
+.idea/
+*.suo
+*.user
+
+# PHP session files
+/tmp/

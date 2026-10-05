@@ -1,0 +1,7 @@
+1|2|1|teach
+2|2|4|teach
+3|2|2|learn
+4|2|8|learn
+5|3|2|teach
+6|3|3|teach
+7|3|1|learn
