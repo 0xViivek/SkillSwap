@@ -73,7 +73,7 @@ SkillSwap/
 
 ```bash
 # 1. Clone the repo
-git clone https://github.com/YOUR_USERNAME/SkillSwap.git
+git clone https://github.com/0xViivek/SkillSwap.git
 
 # 2. Move into XAMPP's web root
 #    Copy/move the SkillSwap folder to:
