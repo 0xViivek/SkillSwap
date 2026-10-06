@@ -18,6 +18,12 @@ MUTUAL MATCH = 100%
 
 The matching algorithm is rule-based, transparent, and explainable — not a black-box AI.
 
+![Mutual skill match](docs/screenshots/matches.jpg)
+
+Demo screenshots: [Landing](docs/screenshots/landing.jpg) ·
+[Accepted exchange](docs/screenshots/accepted-request.jpg) ·
+[Admin dashboard](docs/screenshots/admin-dashboard.jpg).
+
 ---
 
 ## 🛠️ Tech Stack
@@ -60,11 +66,13 @@ SkillSwap/
 ├── css/style.css
 ├── js/script.js
 │
-└── data/               Flat-file storage
-    ├── users.txt
-    ├── skills.txt
-    ├── user_skills.txt
-    └── requests.txt
+├── data/
+│   ├── seed/           Synthetic, versioned demo fixtures
+│   └── runtime/        Local records, generated on first use and Git-ignored
+├── tests/              Regression, HTTP flow and concurrency checks
+├── tools/              Development router and explicit demo reset
+├── docs/DEMO.md        Demo walkthrough and verification checklist
+└── .github/workflows/php.yml   Automated PHP checks
 ```
 
 ---
@@ -84,10 +92,41 @@ git clone https://github.com/0xViivek/SkillSwap.git
 # 4. Open in browser
 http://localhost/SkillSwap/
 
-# 5. (First time) Verify data layer
-http://localhost/SkillSwap/test_functions.php
-# All tests should show ✅ PASS — then delete the file!
+# 5. Verify from the repository root (PHP must be on PATH)
+php tests/run.php
+# Node 18+ is needed for the HTTP and concurrency suites
+node tests/http.cjs
+node tests/concurrency.cjs
 ```
+
+PHP requires `mbstring`. The `data/runtime` folder must be writable by PHP;
+synthetic fixtures are copied there automatically. Apache must honor the
+included `.htaccess` files (`AllowOverride All`, `mod_authz_core` and `mod_rewrite`). Verify that direct requests
+to `/SkillSwap/data/seed/users.txt` and `/SkillSwap/data/runtime/users.txt`
+return **403** before serving the app beyond your own computer.
+
+For the development-server alternative, Windows commands, demo/reset steps,
+manual mobile checks and current limitations, see [the demo guide](docs/DEMO.md).
+
+The matching score is a rule-based label: **100%** means both skill directions
+match; **50%** means one direction matches. Sending an exchange requires both
+directions. Accepted requests expose an email link to the exchange partner.
+
+## Validation and data safety
+
+- CSRF tokens protect POST actions, including logout.
+- Login rotates session IDs; session cookies use HttpOnly and SameSite=Lax.
+- Skill deletion checks ownership; exchange actions validate participants,
+  matching skills, receiver ownership and pending status.
+- Stored text rejects pipe/newline injection. A shared data lock serializes
+  ID generation, duplicate checks and complete mutations.
+- Runtime records are ignored by Git. `data/seed` contains demo fixtures only.
+- GitHub Actions checks PHP syntax, regression tests, HTTP flows and concurrent
+  registrations on PHP 8.0 and 8.3.
+
+This remains an academic demo. Multi-file rollback does not provide crash-safe
+database transactions; database migration and backups are needed for deployment
+at larger scale.
 
 ---
 

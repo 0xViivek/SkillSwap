@@ -382,3 +382,10 @@ tr:hover td { background: var(--gray-50); }
     .match-card { grid-template-columns: 1fr; }
     .stat-grid { grid-template-columns: repeat(2, 1fr); }
 }
+
+.logout-button { background: none; border: 0; color: inherit; font: inherit; cursor: pointer; padding: 0.5rem 0.75rem; }
+.nav-links a.btn-primary { color: #fff; }
+@media (max-width: 700px) {
+  .justify-between { flex-wrap: wrap; gap: 0.75rem; }
+  div[style*="grid-template-columns:1fr auto 1fr"] { grid-template-columns: 1fr !important; }
+}

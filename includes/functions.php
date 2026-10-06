@@ -24,7 +24,8 @@ if (!defined('BASE_URL')) {
 }
 
 // ─── Path constants ─────────────────────────────────────────────────────────
-define('DATA_DIR',         __DIR__ . '/../data/');
+if (!defined('DATA_DIR')) define('DATA_DIR', __DIR__ . '/../data/runtime/');
+define('SEED_DIR', __DIR__ . '/../data/seed/');
 define('USERS_FILE',       DATA_DIR . 'users.txt');
 define('SKILLS_FILE',      DATA_DIR . 'skills.txt');
 define('USER_SKILLS_FILE', DATA_DIR . 'user_skills.txt');
@@ -32,61 +33,122 @@ define('REQUESTS_FILE',    DATA_DIR . 'requests.txt');
 
 // ─── Generic helpers ─────────────────────────────────────────────────────────
 
-/**
- * Read a .txt file and return an array of trimmed non-empty lines.
- *
- * @param  string $file  Absolute path to the file.
- * @return string[]
- */
+/** Serialize complete operations, including ID allocation and duplicate checks. */
+function withDataLock(callable $operation, bool $write = true) {
+    static $depth = 0;
+    if ($depth > 0) return $operation();
+    if (!is_dir(DATA_DIR) && !mkdir(DATA_DIR, 0700, true) && !is_dir(DATA_DIR)) {
+        throw new RuntimeException('Cannot create the data directory.');
+    }
+    $lock = fopen(DATA_DIR . '.lock', 'c');
+    if ($lock === false || !flock($lock, $write ? LOCK_EX : LOCK_SH)) {
+        if (is_resource($lock)) fclose($lock);
+        throw new RuntimeException('Cannot lock the data directory.');
+    }
+    $depth++;
+    try { return $operation(); }
+    finally { $depth--; flock($lock, LOCK_UN); fclose($lock); }
+}
+
+/** A missing runtime file is seeded once under the same exclusive lock. */
+function initializeData(): void {
+    static $ready = false;
+    if ($ready) return;
+    withDataLock(function () {
+        foreach (['users.txt', 'skills.txt', 'user_skills.txt', 'requests.txt'] as $name) {
+            if (!file_exists(DATA_DIR . $name)) {
+                $seed = SEED_DIR . $name;
+                $content = file_exists($seed) ? file_get_contents($seed) : '';
+                if ($content === false || file_put_contents(DATA_DIR . $name, $content) === false) {
+                    throw new RuntimeException('Cannot initialize runtime data.');
+                }
+            }
+        }
+    });
+    $ready = true;
+}
+
 function readData(string $file): array {
-    if (!file_exists($file)) return [];
-    $lines = file($file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-    return $lines ?: [];
+    initializeData();
+    return withDataLock(function () use ($file) {
+        if (!file_exists($file)) return [];
+        $lines = file($file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+        if ($lines === false) throw new RuntimeException('Cannot read stored data.');
+        return $lines;
+    }, false);
 }
 
-/**
- * Append a single pipe-delimited line to a file.
- *
- * @param  string $file  Absolute path to the file.
- * @param  string $line  The already-formatted line (NO newline needed).
- * @return bool
- */
 function appendData(string $file, string $line): bool {
-    return file_put_contents($file, $line . PHP_EOL, FILE_APPEND | LOCK_EX) !== false;
+    initializeData();
+    return withDataLock(fn() => writeAllData($file, array_merge(readData($file), [$line])));
 }
 
-/**
- * Overwrite the entire file with the provided array of lines.
- * Used for updates (accept/reject, profile edits, deletions).
- *
- * @param  string   $file   Absolute path to the file.
- * @param  string[] $lines  Lines WITHOUT trailing newlines.
- * @return bool
- */
+/** Write a complete temporary file, then replace the previous version. */
 function writeAllData(string $file, array $lines): bool {
+    initializeData();
+    return withDataLock(fn() => writeAllDataUnlocked($file, $lines));
+}
+
+function writeAllDataUnlocked(string $file, array $lines): bool {
     $content = implode(PHP_EOL, $lines);
-    if (!empty($lines)) $content .= PHP_EOL;   // trailing newline
-    return file_put_contents($file, $content, LOCK_EX) !== false;
+    if ($lines) $content .= PHP_EOL;
+    $temporary = tempnam(DATA_DIR, '.write-');
+    if ($temporary === false) return false;
+    try {
+        if (file_put_contents($temporary, $content) !== strlen($content)) return false;
+        return rename($temporary, $file);
+    } finally { if (file_exists($temporary)) unlink($temporary); }
+}
+
+function validStoredField(string $value): bool {
+    return $value !== '' && !preg_match('/[|\r\n\x00]/', $value);
+}
+
+/** Restore previous contents if a multi-file operation fails. */
+function mutateData(callable $operation) {
+    initializeData();
+    return withDataLock(function () use ($operation) {
+        $snapshots = [];
+        foreach ([USERS_FILE, SKILLS_FILE, USER_SKILLS_FILE, REQUESTS_FILE] as $file) {
+            $snapshots[$file] = readData($file);
+        }
+        try { $result = $operation(); }
+        catch (Throwable $error) { $result = false; error_log('SkillSwap storage operation failed: ' . $error->getMessage()); }
+        if ($result === false) {
+            foreach ($snapshots as $file => $lines) {
+                if (readData($file) !== $lines && !writeAllData($file, $lines)) {
+                    throw new RuntimeException('Storage recovery failed; restore from backup.');
+                }
+            }
+        }
+        return $result;
+    });
 }
 
 /**
- * Get the next available numeric ID for a file.
- * Reads the first field of every line, returns max + 1.
+ * Reserve a monotonically increasing ID. Deleted IDs are never reused,
+ * so an old session cannot become a newly registered student's session.
  *
  * @param  string $file
  * @return int
  */
 function getNextId(string $file): int {
-    $lines = readData($file);
-    if (empty($lines)) return 1;
-    $max = 0;
-    foreach ($lines as $line) {
-        $parts = explode('|', $line);
-        if (isset($parts[0]) && (int)$parts[0] > $max) {
-            $max = (int)$parts[0];
+    initializeData();
+    return withDataLock(function () use ($file) {
+        $counterFile = DATA_DIR . '.ids.json';
+        $stored = readData($counterFile);
+        $counters = $stored ? json_decode(implode('', $stored), true, 512, JSON_THROW_ON_ERROR) : [];
+        $key = basename($file);
+        $max = (int)($counters[$key] ?? 0);
+        foreach (readData($file) as $line) {
+            $max = max($max, (int)explode('|', $line)[0]);
         }
-    }
-    return $max + 1;
+        $counters[$key] = $max + 1;
+        if (!writeAllData($counterFile, [json_encode($counters, JSON_THROW_ON_ERROR)])) {
+            throw new RuntimeException('Cannot reserve the next ID.');
+        }
+        return $max + 1;
+    });
 }
 
 // ─── USER functions ──────────────────────────────────────────────────────────
@@ -153,6 +215,12 @@ function findUserById(int $id): ?array {
  * @return array|false  The new user array, or false on failure.
  */
 function createUser(string $name, string $email, string $plainPassword, string $department, int $year) {
+    return mutateData(fn() => createUserUnlocked($name, $email, $plainPassword, $department, $year));
+}
+
+function createUserUnlocked(string $name, string $email, string $plainPassword, string $department, int $year) {
+    if (!validStoredField($name) || !validStoredField($department) || !validStoredField($email) ||
+        !filter_var($email, FILTER_VALIDATE_EMAIL) || strlen($name) < 2 || strlen($plainPassword) < 6 || strlen($plainPassword) > 72 || $year < 1 || $year > 4) return false;
     if (findUserByEmail($email) !== null) return false;   // duplicate e-mail
 
     $id   = getNextId(USERS_FILE);
@@ -183,6 +251,13 @@ function createUser(string $name, string $email, string $plainPassword, string $
  * @return bool
  */
 function updateUser(int $userId, ?string $name, ?string $department, ?int $year): bool {
+    return mutateData(fn() => updateUserUnlocked($userId, $name, $department, $year));
+}
+
+function updateUserUnlocked(int $userId, ?string $name, ?string $department, ?int $year): bool {
+    if (($name !== null && (!validStoredField($name) || strlen($name) < 2)) ||
+        ($department !== null && !validStoredField($department)) ||
+        ($year !== null && ($year < 1 || $year > 4))) return false;
     $lines = readData(USERS_FILE);
     $updated = false;
     foreach ($lines as &$line) {
@@ -205,20 +280,26 @@ function updateUser(int $userId, ?string $name, ?string $department, ?int $year)
  * @return bool
  */
 function deleteUser(int $userId): bool {
+    return mutateData(fn() => deleteUserUnlocked($userId));
+}
+
+function deleteUserUnlocked(int $userId): bool {
+    $target = findUserById($userId);
+    if ($target === null || $target['role'] !== 'student') return false;
     // Remove from users.txt
     $lines = array_filter(readData(USERS_FILE), fn($l) => (int)explode('|', $l)[0] !== $userId);
-    writeAllData(USERS_FILE, array_values($lines));
+    if (!writeAllData(USERS_FILE, array_values($lines))) return false;
 
     // Remove user_skills
     $usLines = array_filter(readData(USER_SKILLS_FILE), fn($l) => (int)explode('|', $l)[1] !== $userId);
-    writeAllData(USER_SKILLS_FILE, array_values($usLines));
+    if (!writeAllData(USER_SKILLS_FILE, array_values($usLines))) return false;
 
     // Remove requests (sent or received)
     $rLines = array_filter(readData(REQUESTS_FILE), function($l) use ($userId) {
         $p = explode('|', $l);
         return (int)$p[1] !== $userId && (int)$p[2] !== $userId;
     });
-    writeAllData(REQUESTS_FILE, array_values($rLines));
+    if (!writeAllData(REQUESTS_FILE, array_values($rLines))) return false;
 
     return true;
 }
@@ -320,7 +401,11 @@ function getUserSkillsById(int $userId, ?string $type = null): array {
  * @return bool   false if duplicate or invalid type
  */
 function addUserSkill(int $userId, int $skillId, string $type): bool {
-    if (!in_array($type, ['teach', 'learn'], true)) return false;
+    return mutateData(fn() => addUserSkillUnlocked($userId, $skillId, $type));
+}
+
+function addUserSkillUnlocked(int $userId, int $skillId, string $type): bool {
+    if (!in_array($type, ['teach', 'learn'], true) || findUserById($userId) === null || findSkillById($skillId) === null) return false;
 
     // Check for duplicate
     foreach (getUserSkillsById($userId) as $us) {
@@ -338,7 +423,16 @@ function addUserSkill(int $userId, int $skillId, string $type): bool {
  * @param  int $userSkillId
  * @return bool
  */
-function removeUserSkill(int $userSkillId): bool {
+function removeUserSkill(int $userSkillId, int $ownerId): bool {
+    return mutateData(fn() => removeUserSkillUnlocked($userSkillId, $ownerId));
+}
+
+function removeUserSkillUnlocked(int $userSkillId, int $ownerId): bool {
+    $owned = false;
+    foreach (getUserSkillsById($ownerId) as $skill) {
+        if ($skill['id'] === $userSkillId) $owned = true;
+    }
+    if (!$owned) return false;
     $lines = array_filter(readData(USER_SKILLS_FILE), fn($l) => (int)explode('|', $l)[0] !== $userSkillId);
     return writeAllData(USER_SKILLS_FILE, array_values($lines));
 }
@@ -386,7 +480,7 @@ function getRequestsForUser(int $userId, ?string $role = null): array {
 
 /**
  * Create a new exchange request.
- * Prevents duplicate pending requests between the same pair for the same skills.
+ * Prevents duplicate pending requests from the same sender to the same receiver.
  *
  * @param  int    $senderId
  * @param  int    $receiverId
@@ -395,13 +489,23 @@ function getRequestsForUser(int $userId, ?string $role = null): array {
  * @return array|false  The new request array, or false on failure/duplicate.
  */
 function createRequest(int $senderId, int $receiverId, int $offeredSkillId, int $requestedSkillId) {
+    return mutateData(fn() => createRequestUnlocked($senderId, $receiverId, $offeredSkillId, $requestedSkillId));
+}
+
+function createRequestUnlocked(int $senderId, int $receiverId, int $offeredSkillId, int $requestedSkillId) {
+    $sender = findUserById($senderId);
+    $receiver = findUserById($receiverId);
+    if ($senderId === $receiverId || $sender === null || $receiver === null ||
+        $sender['role'] !== 'student' || $receiver['role'] !== 'student' ||
+        findSkillById($offeredSkillId) === null || findSkillById($requestedSkillId) === null) return false;
+    $match = calculateMatchScore($senderId, $receiverId);
+    if (!in_array($offeredSkillId, $match['dir2_matches'], true) ||
+        !in_array($requestedSkillId, $match['dir1_matches'], true)) return false;
     // Check for existing pending request
     foreach (getRequests() as $r) {
         if (
             $r['sender_id']          === $senderId   &&
             $r['receiver_id']        === $receiverId &&
-            $r['offered_skill_id']   === $offeredSkillId &&
-            $r['requested_skill_id'] === $requestedSkillId &&
             $r['status']             === 'pending'
         ) return false;
     }
@@ -430,7 +534,11 @@ function createRequest(int $senderId, int $receiverId, int $offeredSkillId, int 
  * @param  string $status     'accepted' or 'rejected'
  * @return bool
  */
-function updateRequestStatus(int $requestId, string $status): bool {
+function updateRequestStatus(int $requestId, string $status, int $receiverId): bool {
+    return mutateData(fn() => updateRequestStatusUnlocked($requestId, $status, $receiverId));
+}
+
+function updateRequestStatusUnlocked(int $requestId, string $status, int $receiverId): bool {
     if (!in_array($status, ['accepted', 'rejected'], true)) return false;
 
     $lines   = readData(REQUESTS_FILE);
@@ -438,6 +546,7 @@ function updateRequestStatus(int $requestId, string $status): bool {
     foreach ($lines as &$line) {
         $p = explode('|', $line);
         if ((int)$p[0] !== $requestId) continue;
+        if ((int)$p[2] !== $receiverId || $p[5] !== 'pending') return false;
         $p[5]    = $status;
         $line    = implode('|', $p);
         $updated = true;

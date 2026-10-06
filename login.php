@@ -53,13 +53,14 @@ include __DIR__ . '/includes/header.php';
         <?php endif; ?>
 
         <?php if (isset($_SESSION['flash'])): ?>
-            <div class="alert alert-<?= $_SESSION['flash']['type'] ?>">
+            <div data-flash class="alert alert-<?= $_SESSION['flash']['type'] ?>">
                 <?= htmlspecialchars($_SESSION['flash']['msg']) ?>
             </div>
             <?php unset($_SESSION['flash']); ?>
         <?php endif; ?>
 
         <form method="POST" action="">
+            <?= csrfField() ?>
 
             <div class="form-group">
                 <label for="email">Email Address</label>

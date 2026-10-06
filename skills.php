@@ -23,7 +23,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     else {
         $result = addUserSkill($userId, $skillId, $type);
         if ($result === false) {
-            $errors[] = 'You already have that skill in that category.';
+            $errors[] = 'Could not add skill. It may already exist; please try again.';
         } else {
             $_SESSION['flash'] = ['type' => 'success', 'msg' => 'Skill added successfully!'];
             header('Location: ' . BASE_URL . '/skills.php');
@@ -36,7 +36,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'remove') {
     $userSkillId = (int)($_POST['user_skill_id'] ?? 0);
     if ($userSkillId > 0) {
-        removeUserSkill($userSkillId);
+        if (!removeUserSkill($userSkillId, $userId)) {
+            $_SESSION['flash'] = ['type' => 'error', 'msg' => 'Could not remove this skill.'];
+            header('Location: ' . BASE_URL . '/skills.php');
+            exit;
+        }
         $_SESSION['flash'] = ['type' => 'info', 'msg' => 'Skill removed.'];
         header('Location: ' . BASE_URL . '/skills.php');
         exit;
@@ -57,7 +61,7 @@ include __DIR__ . '/includes/header.php';
 ?>
 
 <?php if (isset($_SESSION['flash'])): ?>
-    <div class="alert alert-<?= $_SESSION['flash']['type'] ?>">
+    <div data-flash class="alert alert-<?= $_SESSION['flash']['type'] ?>">
         <?= htmlspecialchars($_SESSION['flash']['msg']) ?>
     </div>
     <?php unset($_SESSION['flash']); ?>
@@ -82,6 +86,7 @@ include __DIR__ . '/includes/header.php';
         <?php endif; ?>
 
         <form method="POST" action="">
+            <?= csrfField() ?>
             <input type="hidden" name="action" value="add">
 
             <div class="form-group">
@@ -139,6 +144,7 @@ include __DIR__ . '/includes/header.php';
                                 <span class="text-muted" style="font-size:0.78rem; margin-left:0.5rem;"><?= htmlspecialchars($sk['category']) ?></span>
                             </div>
                             <form method="POST" action="" style="margin:0;">
+            <?= csrfField() ?>
                                 <input type="hidden" name="action" value="remove">
                                 <input type="hidden" name="user_skill_id" value="<?= $us['id'] ?>">
                                 <button type="submit" class="btn btn-danger btn-sm"
@@ -172,6 +178,7 @@ include __DIR__ . '/includes/header.php';
                                 <span class="text-muted" style="font-size:0.78rem; margin-left:0.5rem;"><?= htmlspecialchars($sk['category']) ?></span>
                             </div>
                             <form method="POST" action="" style="margin:0;">
+            <?= csrfField() ?>
                                 <input type="hidden" name="action" value="remove">
                                 <input type="hidden" name="user_skill_id" value="<?= $us['id'] ?>">
                                 <button type="submit" class="btn btn-danger btn-sm"
