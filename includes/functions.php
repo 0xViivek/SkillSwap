@@ -13,6 +13,16 @@
  *   requests.txt   → request_id|sender_id|receiver_id|offered_skill_id|requested_skill_id|status|created_at
  */
 
+// ─── BASE URL (auto-detects subfolder, works in any XAMPP setup) ─────────────
+// e.g. localhost/SkillSwap/dashboard.php  → BASE_URL = /SkillSwap
+// e.g. localhost/SkillSwap/admin/x.php   → BASE_URL = /SkillSwap
+// e.g. localhost/dashboard.php           → BASE_URL = (empty string)
+if (!defined('BASE_URL')) {
+    $__dir = str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME']));
+    $__dir = preg_replace('#/admin/?$#', '', $__dir);   // strip /admin suffix
+    define('BASE_URL', rtrim($__dir, '/'));
+}
+
 // ─── Path constants ─────────────────────────────────────────────────────────
 define('DATA_DIR',         __DIR__ . '/../data/');
 define('USERS_FILE',       DATA_DIR . 'users.txt');

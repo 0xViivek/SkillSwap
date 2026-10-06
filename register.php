@@ -48,7 +48,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Log the user in immediately after registration
             loginUser($email, $password);
             $_SESSION['flash'] = ['type' => 'success', 'msg' => 'Welcome to SkillSwap, ' . $user['name'] . '!'];
-            header('Location: ../dashboard.php');
+            header('Location: ' . BASE_URL . '/dashboard.php');
             exit;
         }
     }
@@ -133,7 +133,7 @@ include __DIR__ . '/includes/header.php';
         </form>
 
         <p class="text-center mt-2 text-muted">
-            Already have an account? <a href="/login.php">Login here</a>
+            Already have an account? <a href="<?= BASE_URL ?>/login.php">Login here</a>
         </p>
 
     </div>

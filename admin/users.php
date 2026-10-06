@@ -15,7 +15,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'], $_POST['use
         deleteUser($targetId);
         $_SESSION['flash'] = ['type' => 'info', 'msg' => 'Student removed successfully.'];
     }
-    header('Location: /admin/users.php');
+    header('Location: ' . BASE_URL . '/admin/users.php');
     exit;
 }
 

@@ -7,14 +7,13 @@
 
 require_once __DIR__ . '/includes/auth.php';
 
-// Only logout if actually logged in
 if (isLoggedIn()) {
     logoutUser();
 }
 
-// Flash message shown on login page after logout
+// Start fresh session just for the flash message
 session_start();
 $_SESSION['flash'] = ['type' => 'info', 'msg' => 'You have been logged out successfully.'];
 
-header('Location: login.php');
+header('Location: ' . BASE_URL . '/login.php');
 exit;

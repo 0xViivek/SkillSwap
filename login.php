@@ -27,9 +27,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } else {
             // Redirect based on role
             if ($user['role'] === 'admin') {
-                header('Location: admin/dashboard.php');
+                header('Location: ' . BASE_URL . '/admin/dashboard.php');
             } else {
-                header('Location: dashboard.php');
+                header('Location: ' . BASE_URL . '/dashboard.php');
             }
             exit;
         }
@@ -82,7 +82,7 @@ include __DIR__ . '/includes/header.php';
         </form>
 
         <p class="text-center mt-2 text-muted">
-            Don't have an account? <a href="/register.php">Register here</a>
+            Don't have an account? <a href="<?= BASE_URL ?>/register.php">Register here</a>
         </p>
 
         <!-- Demo hint — remove before final presentation if needed -->

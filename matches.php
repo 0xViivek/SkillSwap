@@ -27,7 +27,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             $_SESSION['flash'] = ['type' => 'success', 'msg' => 'Exchange request sent successfully!'];
         }
     }
-    header('Location: /matches.php');
+    header('Location: ' . BASE_URL . '/matches.php');
     exit;
 }
 
@@ -62,7 +62,7 @@ include __DIR__ . '/includes/header.php';
         <p style="font-size:3rem;">🔍</p>
         <h2 style="margin:0.5rem 0;">No matches yet</h2>
         <p class="text-muted">Add skills you can teach and skills you want to learn — the system will find compatible students automatically.</p>
-        <a href="/skills.php" class="btn btn-primary mt-2">Add Skills →</a>
+        <a href="<?= BASE_URL ?>/skills.php" class="btn btn-primary mt-2">Add Skills →</a>
     </div>
 
 <?php else: ?>
@@ -174,7 +174,7 @@ include __DIR__ . '/includes/header.php';
 
             <?php if ($existingPending): ?>
                 <span class="badge badge-pending" style="display:block; margin-bottom:0.5rem;">Request Pending</span>
-                <a href="/requests.php" class="btn btn-outline btn-sm">View Request</a>
+                <a href="<?= BASE_URL ?>/requests.php" class="btn btn-outline btn-sm">View Request</a>
             <?php elseif ($defaultOffered && $defaultRequested): ?>
                 <form method="POST" action="">
                     <input type="hidden" name="action"             value="send_request">
