@@ -22,7 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     if ($receiverId && $offeredSkillId && $requestedSkillId) {
         $result = createRequest($userId, $receiverId, $offeredSkillId, $requestedSkillId);
         if ($result === false) {
-            $_SESSION['flash'] = ['type' => 'info', 'msg' => 'You already have a pending request with this student.'];
+            $_SESSION['flash'] = ['type' => 'info', 'msg' => 'Could not send request. Check your matching skills and existing pending requests.'];
         } else {
             $_SESSION['flash'] = ['type' => 'success', 'msg' => 'Exchange request sent successfully!'];
         }
@@ -39,7 +39,7 @@ include __DIR__ . '/includes/header.php';
 ?>
 
 <?php if (isset($_SESSION['flash'])): ?>
-    <div class="alert alert-<?= $_SESSION['flash']['type'] ?>">
+    <div data-flash class="alert alert-<?= $_SESSION['flash']['type'] ?>">
         <?= htmlspecialchars($_SESSION['flash']['msg']) ?>
     </div>
     <?php unset($_SESSION['flash']); ?>
@@ -177,10 +177,9 @@ include __DIR__ . '/includes/header.php';
                 <a href="<?= BASE_URL ?>/requests.php" class="btn btn-outline btn-sm">View Request</a>
             <?php elseif ($defaultOffered && $defaultRequested): ?>
                 <form method="POST" action="">
+            <?= csrfField() ?>
                     <input type="hidden" name="action"             value="send_request">
                     <input type="hidden" name="receiver_id"        value="<?= $other['id'] ?>">
-                    <input type="hidden" name="offered_skill_id"   value="<?= $defaultOffered ?>">
-                    <input type="hidden" name="requested_skill_id" value="<?= $defaultRequested ?>">
 
                     <div class="form-group" style="text-align:left; font-size:0.8rem;">
                         <label>I'll teach:</label>

@@ -33,6 +33,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($password === '')           $errors[] = 'Password is required.';
     elseif (strlen($password) < 6) $errors[] = 'Password must be at least 6 characters.';
+    elseif (strlen($password) > 72) $errors[] = 'Password must be at most 72 bytes.';
     elseif ($password !== $confirm) $errors[] = 'Passwords do not match.';
 
     if ($department === '') $errors[] = 'Department is required.';
@@ -43,7 +44,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $user = createUser($name, $email, $password, $department, $year);
 
         if ($user === false) {
-            $errors[] = 'An account with this email already exists.';
+            $errors[] = 'Could not create account. Check for an existing email, avoid pipes and line breaks, and use a password of 6–72 bytes.';
         } else {
             // Log the user in immediately after registration
             loginUser($email, $password);
@@ -73,6 +74,7 @@ include __DIR__ . '/includes/header.php';
         <?php endif; ?>
 
         <form method="POST" action="">
+            <?= csrfField() ?>
 
             <div class="form-group">
                 <label for="name">Full Name</label>

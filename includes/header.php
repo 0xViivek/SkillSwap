@@ -34,7 +34,7 @@ if (!isset($pageTitle)) $pageTitle = 'SkillSwap';
                 <li><a href="<?= BASE_URL ?>/requests.php"  <?= str_contains($_SERVER['REQUEST_URI'], 'requests')  ? 'class="active"' : '' ?>>Requests</a></li>
                 <li><a href="<?= BASE_URL ?>/profile.php"   <?= str_contains($_SERVER['REQUEST_URI'], 'profile')   ? 'class="active"' : '' ?>>Profile</a></li>
             <?php endif; ?>
-            <li><a href="<?= BASE_URL ?>/logout.php">Logout</a></li>
+            <li><form method="POST" action="<?= BASE_URL ?>/logout.php"><?= csrfField() ?><button type="submit" class="logout-button">Logout</button></form></li>
         </ul>
         <span class="nav-user">👤 <?= htmlspecialchars($_SESSION['user_name']) ?></span>
     <?php else: ?>

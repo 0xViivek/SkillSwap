@@ -25,3 +25,6 @@ desktop.ini
 
 # PHP session files
 /tmp/
+
+# Mutable records stay local; only synthetic seed fixtures are versioned.
+/data/runtime/
