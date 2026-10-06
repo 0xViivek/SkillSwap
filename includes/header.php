@@ -3,17 +3,10 @@
  * SkillSwap — Shared HTML header
  * File: includes/header.php
  *
- * BASE_URL is auto-detected from the server so links work in
- * any subfolder (e.g. localhost/SkillSwap/ or localhost/).
+ * BASE_URL is defined in functions.php (via auth.php).
+ * Do NOT redefine it here.
  */
 if (!isset($pageTitle)) $pageTitle = 'SkillSwap';
-
-// Auto-detect the subfolder — works in any XAMPP setup
-// e.g. if URL is localhost/SkillSwap/dashboard.php → BASE = /SkillSwap
-$scriptDir  = str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME']));
-// Walk up to project root (remove /admin subfolder if present)
-$base       = rtrim(str_replace('/admin', '', $scriptDir), '/');
-define('BASE_URL', $base);  // e.g. "/SkillSwap"
 ?>
 <!DOCTYPE html>
 <html lang="en">
