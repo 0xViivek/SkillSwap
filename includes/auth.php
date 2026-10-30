@@ -7,10 +7,16 @@
 
 require_once __DIR__ . '/functions.php';   // also defines BASE_URL
 
+function isHttpsRequest(): bool {
+    if (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') return true;
+    return getenv('SKILLSWAP_TRUST_PROXY') === '1' &&
+        strtolower(trim($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '')) === 'https';
+}
+
 if (session_status() === PHP_SESSION_NONE) {
     session_set_cookie_params([
         'httponly' => true,
-        'secure' => !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off',
+        'secure' => isHttpsRequest(),
         'samesite' => 'Lax',
         'path' => BASE_URL ?: '/',
     ]);

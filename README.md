@@ -108,6 +108,10 @@ return **403** before serving the app beyond your own computer.
 For the development-server alternative, Windows commands, demo/reset steps,
 manual mobile checks and current limitations, see [the demo guide](docs/DEMO.md).
 
+For a laptop-independent PHP demo URL, see [Render hosting](docs/HOSTING.md).
+The free demo plan keeps a stable URL but resets file records on restarts and
+may sleep when idle. `render.yaml` selects the free plan only.
+
 The matching score is a rule-based label: **100%** means both skill directions
 match; **50%** means one direction matches. Sending an exchange requires both
 directions. Accepted requests expose an email link to the exchange partner.

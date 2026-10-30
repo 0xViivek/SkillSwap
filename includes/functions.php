@@ -24,7 +24,10 @@ if (!defined('BASE_URL')) {
 }
 
 // ─── Path constants ─────────────────────────────────────────────────────────
-if (!defined('DATA_DIR')) define('DATA_DIR', __DIR__ . '/../data/runtime/');
+if (!defined('DATA_DIR')) {
+    $configuredDataDir = getenv('SKILLSWAP_DATA_DIR') ?: __DIR__ . '/../data/runtime/';
+    define('DATA_DIR', rtrim($configuredDataDir, '/\\') . DIRECTORY_SEPARATOR);
+}
 define('SEED_DIR', __DIR__ . '/../data/seed/');
 define('USERS_FILE',       DATA_DIR . 'users.txt');
 define('SKILLS_FILE',      DATA_DIR . 'skills.txt');
@@ -59,6 +62,19 @@ function initializeData(): void {
             if (!file_exists(DATA_DIR . $name)) {
                 $seed = SEED_DIR . $name;
                 $content = file_exists($seed) ? file_get_contents($seed) : '';
+                if ($name === 'users.txt' && getenv('SKILLSWAP_PUBLIC_DEMO') === '1' && $content !== false) {
+                    $demoUsers = [1 => ['Demo Admin', 'admin@skillswap.test'], 2 => ['Demo Student', 'student@skillswap.test'], 3 => ['Demo Partner', 'partner@skillswap.test']];
+                    $rows = preg_split('/\r?\n/', trim($content));
+                    foreach ($rows as &$row) {
+                        $fields = explode('|', $row);
+                        if (count($fields) === 7 && isset($demoUsers[(int)$fields[0]])) {
+                            [$fields[1], $fields[2]] = $demoUsers[(int)$fields[0]];
+                            $row = implode('|', $fields);
+                        }
+                    }
+                    unset($row);
+                    $content = implode(PHP_EOL, $rows) . PHP_EOL;
+                }
                 if ($content === false || file_put_contents(DATA_DIR . $name, $content) === false) {
                     throw new RuntimeException('Cannot initialize runtime data.');
                 }

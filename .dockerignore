@@ -1,0 +1,13 @@
+.git
+.github
+.env
+.env.*
+data/runtime
+node_modules
+tests
+tools
+docs
+output
+tmp
+*.log
+*.pid
