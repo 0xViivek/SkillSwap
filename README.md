@@ -1,165 +1,85 @@
-# 🔄 SkillSwap — Student Skill Exchange Platform
+# SkillSwap
 
-> A web-based platform where students list skills they can **teach** and skills they want to **learn**. The system finds **compatible students** and enables skill-exchange requests.
+SkillSwap is a small PHP project where students can exchange skills. You add what you can teach and what you want to learn, find students with matching interests, and send an exchange request.
 
----
+I worked on this project to practise the web development concepts covered in my NIELIT training. The training took place offline from 1 to 15 September 2026. SkillSwap was separate project work after the training.
 
-## 💡 Core Feature — Two-Way Skill Matching
+## What it does
 
-```
-Student A teaches: C++, HTML       Student B teaches: Python, Java
-Student A wants:   Python, Git     Student B wants:   C++
+- Student registration, login and profile editing
+- Separate lists for skills to teach and skills to learn
+- Matches based on both students' interests
+- Exchange requests that the receiver can accept or reject
+- An email link to contact the partner after acceptance
+- Admin pages to view students, requests and basic statistics
 
-→ A wants Python  ✓  B teaches Python
-→ B wants C++     ✓  A teaches C++
+For example, if I can teach C++ and want to learn Python, someone who teaches Python and wants to learn C++ is a mutual match. The app labels this as 100%. A match in only one direction gets 50%. These scores describe matching interests, not skill level. Sending a request requires a match in both directions.
 
-MUTUAL MATCH = 100%
-```
+## My contribution
 
-The matching algorithm is rule-based, transparent, and explainable — not a black-box AI.
+My work covered login and registration, skill management, testing and debugging, and project documentation. I used Codex to help with development, debugging and documentation.
 
----
+Working on the project helped me understand how browser forms reach PHP, how sessions keep a user logged in, and how the application reads and updates stored records.
 
-## 🛠️ Tech Stack
+## Built with
 
-| Layer | Technology |
-|---|---|
-| Frontend | HTML5, CSS3, JavaScript (vanilla) |
-| Backend | PHP 8+ |
-| Server | Apache via XAMPP |
-| Storage | Flat `.txt` files (pipe-delimited) |
-| Version control | Git + GitHub |
+- HTML and CSS for pages and layout
+- JavaScript for search filters, request tabs, confirmation dialogs and flash messages
+- PHP for authentication, matching, requests and file operations
+- Apache through XAMPP for local development
+- Git and GitHub for version control
 
----
+The app currently stores records in pipe-delimited text files. It does not use MySQL.
 
-## 📁 Project Structure
+## Run it locally
 
-```
-SkillSwap/
-├── index.php           Landing page
-├── login.php           Student / admin login
-├── register.php        Student registration
-├── logout.php          Session destroy
-├── dashboard.php       Student dashboard
-├── profile.php         Edit profile
-├── skills.php          Add / remove skills
-├── matches.php         View skill matches
-├── requests.php        Send / accept / reject requests
-│
-├── admin/
-│   ├── dashboard.php   Admin stats
-│   ├── users.php       Manage students
-│   └── requests.php    View all requests
-│
-├── includes/
-│   ├── functions.php   ← ALL data layer functions (single source of truth)
-│   ├── auth.php        Session helpers
-│   ├── header.php      Shared nav
-│   └── footer.php      Shared footer
-│
-├── css/style.css
-├── js/script.js
-│
-└── data/               Flat-file storage
-    ├── users.txt
-    ├── skills.txt
-    ├── user_skills.txt
-    └── requests.txt
-```
+The latest fixes, tests and hosting setup are on [`codex/mvp-hardening`](https://github.com/0xViivek/SkillSwap/tree/codex/mvp-hardening). They are tracked in [pull request #4](https://github.com/0xViivek/SkillSwap/pull/4).
 
----
+1. Install XAMPP with PHP 8 or newer and enable the `mbstring` extension.
+2. Clone the current development version into XAMPP's web folder:
 
-## 🚀 Local Setup (XAMPP)
+   ```powershell
+   cd C:\xampp\htdocs
+   git clone --branch codex/mvp-hardening https://github.com/0xViivek/SkillSwap.git
+   ```
 
-```bash
-# 1. Clone the repo
-git clone https://github.com/0xViivek/SkillSwap.git
+3. Start Apache in the XAMPP Control Panel.
+4. Open `http://localhost/SkillSwap/` in your browser.
 
-# 2. Move into XAMPP's web root
-#    Copy/move the SkillSwap folder to:
-#    C:\xampp\htdocs\SkillSwap\
+On that branch, the app creates local records in `data/runtime` from the sample files in `data/seed`. PHP needs write access to the runtime folder. Apache must honour the included `.htaccess` rules so data files cannot be opened from the browser.
 
-# 3. Start Apache in XAMPP Control Panel
-
-# 4. Open in browser
-http://localhost/SkillSwap/
-
-# 5. (First time) Verify data layer
-http://localhost/SkillSwap/test_functions.php
-# All tests should show ✅ PASS — then delete the file!
-```
-
----
-
-## 🔑 Demo Accounts (seed data)
+For a fresh local sample dataset:
 
 | Role | Email | Password |
 |---|---|---|
-| Admin | admin@skillswap.com | password |
 | Student | vivek@gmail.com | password |
 | Student | rahul@gmail.com | password |
+| Admin | admin@skillswap.com | password |
 
----
+These are sample credentials for local testing. Public demo mode uses separate sample accounts, listed in the hosting guide.
 
-## 🌿 Branch Strategy
+## Tests
 
-| Branch | Owner | Purpose |
-|---|---|---|
-| `main` | Member 1 | Production-ready code only |
-| `feature/auth` | Member 2 | Login, Register, Logout |
-| `feature/skills` | Member 3 | Profile, Skills CRUD |
-| `feature/matching` | Member 1 | Matching engine, Match page |
-| `feature/exchange` | Member 4 | Requests (send/accept/reject) |
-| `feature/ui-admin` | Member 5 | Landing page, CSS, Admin pages |
+From the project folder on the development branch:
 
-**Workflow:**
-```bash
-git pull origin main            # always before starting work
-git checkout feature/your-branch
-# ... code ...
-git add .
-git commit -m "feat: description"
-git push origin feature/your-branch
-# open Pull Request → Member 1 reviews → merge to main
+```powershell
+C:\xampp\php\php.exe tests/run.php
+C:\xampp\php\php.exe tests/hosting.php
+
+# Node.js is also needed for these checks
+$env:PHP_BINARY = 'C:\xampp\php\php.exe'
+node tests/http.cjs
+node tests/concurrency.cjs
 ```
 
----
+The tests cover core functions, HTTP flows and competing file writes. More setup details and a demo walkthrough are in the [demo guide](https://github.com/0xViivek/SkillSwap/blob/codex/mvp-hardening/docs/DEMO.md).
 
-## 📅 4-Day Plan
+## Current limits and next steps
 
-| Day | Goal |
-|---|---|
-| Day 1 | Foundation: auth, sessions, profile, skills CRUD, .txt layer |
-| Day 2 | Matching engine, match score, match results page |
-| Day 3 | Exchange requests, admin dashboard |
-| Day 4 | 🔒 Feature freeze — bug fix, UI polish, demo prep, PPT |
+This is an academic demo. Text files keep the setup simple, but I would move to a database and add backups before using it for a larger group. An accepted request provides an email link. The app does not send emails automatically, and it does not yet have chat, scheduling or reviews.
 
----
+The PHP hosting configuration is included in the development branch. See the [hosting guide](https://github.com/0xViivek/SkillSwap/blob/codex/mvp-hardening/docs/HOSTING.md) for setup and storage limitations. There is no permanent hosted demo linked here yet.
 
-## 👥 Team
+## About me
 
-| Member | Role | Module |
-|---|---|---|
-| Member 1 | Project Lead | Architecture · Matching · Integration |
-| Member 2 | Auth | Login · Register · Sessions |
-| Member 3 | Skills | Profile · Skills CRUD · Browse |
-| Member 4 | Exchange | Requests · Accept/Reject |
-| Member 5 | UI / Admin | CSS · Landing · Admin pages |
-
----
-
-## 🔮 Future Scope
-
-- MySQL/MariaDB database migration
-- Real-time chat between matched students
-- Email notifications
-- Ratings & reviews after exchanges
-- AI-powered skill recommendations
-- Mobile application
-- College-wide deployment
-
----
-
-## 📄 License
-
-Academic project — built during a 15-day internship program.
+Vivek Kumar, CSE, GEC Sheikhpura.

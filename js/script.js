@@ -10,7 +10,7 @@
 document.addEventListener('DOMContentLoaded', function () {
 
     // Auto-hide flash alerts after 4 seconds
-    document.querySelectorAll('.alert').forEach(function (el) {
+    document.querySelectorAll('.alert[data-flash]').forEach(function (el) {
         setTimeout(function () {
             el.style.transition = 'opacity 0.5s';
             el.style.opacity    = '0';
@@ -43,14 +43,16 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // ── Confirm before dangerous actions ──────────────────────────
-    document.querySelectorAll('[data-confirm]').forEach(function (el) {
-        el.addEventListener('click', function (e) {
-            if (!confirm(this.dataset.confirm)) e.preventDefault();
+    document.querySelectorAll('form:has([data-confirm])').forEach(function (form) {
+        form.addEventListener('submit', function (e) {
+            const button = e.submitter || this.querySelector('[data-confirm]');
+            if (button && button.dataset.confirm && !confirm(button.dataset.confirm)) e.preventDefault();
         });
     });
 
     // ── Score badge colour fix (for dynamically added badges) ─────
     document.querySelectorAll('.match-score-badge').forEach(function (badge) {
+        if (!badge.hasAttribute('data-score')) return;
         const score = parseInt(badge.dataset.score, 10);
         if      (score === 100) badge.classList.add('score-100');
         else if (score >= 50)   badge.classList.add('score-50');

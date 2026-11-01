@@ -1,0 +1,6 @@
+Options -Indexes
+RewriteEngine On
+RewriteRule (^|/)\. - [F,L]
+<FilesMatch "^(\.|README\.md$)|\.(cjs|toml|ya?ml|log)$">
+    Require all denied
+</FilesMatch>

@@ -24,10 +24,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'], $_POST['req
 
     if ($targetReq && $targetReq['receiver_id'] === $userId) {
         if ($action === 'accept') {
-            updateRequestStatus($requestId, 'accepted');
+            if (!updateRequestStatus($requestId, 'accepted', $userId)) {
+                $_SESSION['flash'] = ['type' => 'error', 'msg' => 'Could not accept request. It may already have been answered.'];
+                header('Location: ' . BASE_URL . '/requests.php'); exit;
+            }
             $_SESSION['flash'] = ['type' => 'success', 'msg' => 'Request accepted! Skill exchange is now active.'];
         } elseif ($action === 'reject') {
-            updateRequestStatus($requestId, 'rejected');
+            if (!updateRequestStatus($requestId, 'rejected', $userId)) {
+                $_SESSION['flash'] = ['type' => 'error', 'msg' => 'Could not reject request. It may already have been answered.'];
+                header('Location: ' . BASE_URL . '/requests.php'); exit;
+            }
             $_SESSION['flash'] = ['type' => 'info', 'msg' => 'Request rejected.'];
         }
     }
@@ -41,15 +47,15 @@ $incoming = getRequestsForUser($userId, 'receiver');
 $outgoing = getRequestsForUser($userId, 'sender');
 
 // Sort: pending first
-usort($incoming, fn($a,$b) => ($a['status'] === 'pending' ? -1 : 1));
-usort($outgoing, fn($a,$b) => ($a['status'] === 'pending' ? -1 : 1));
+usort($incoming, fn($a,$b) => (($b['status'] === 'pending') <=> ($a['status'] === 'pending')) ?: ($b['id'] <=> $a['id']));
+usort($outgoing, fn($a,$b) => (($b['status'] === 'pending') <=> ($a['status'] === 'pending')) ?: ($b['id'] <=> $a['id']));
 
 $pageTitle = 'Exchange Requests';
 include __DIR__ . '/includes/header.php';
 ?>
 
 <?php if (isset($_SESSION['flash'])): ?>
-    <div class="alert alert-<?= $_SESSION['flash']['type'] ?>">
+    <div data-flash class="alert alert-<?= $_SESSION['flash']['type'] ?>">
         <?= htmlspecialchars($_SESSION['flash']['msg']) ?>
     </div>
     <?php unset($_SESSION['flash']); ?>
@@ -124,11 +130,13 @@ include __DIR__ . '/includes/header.php';
             <?php if ($req['status'] === 'pending'): ?>
                 <div class="d-flex gap-1">
                     <form method="POST" action="" style="margin:0;">
+            <?= csrfField() ?>
                         <input type="hidden" name="action"     value="accept">
                         <input type="hidden" name="request_id" value="<?= $req['id'] ?>">
                         <button type="submit" class="btn btn-success">✓ Accept</button>
                     </form>
                     <form method="POST" action="" style="margin:0;">
+            <?= csrfField() ?>
                         <input type="hidden" name="action"     value="reject">
                         <input type="hidden" name="request_id" value="<?= $req['id'] ?>">
                         <button type="submit" class="btn btn-danger"
@@ -139,7 +147,8 @@ include __DIR__ . '/includes/header.php';
                 </div>
             <?php elseif ($req['status'] === 'accepted'): ?>
                 <div class="alert alert-success" style="margin:0; padding:0.5rem 0.85rem;">
-                    🎉 Skill exchange is active! Connect with <?= htmlspecialchars($sender['name']) ?> to start learning.
+                    🎉 Skill exchange is active! Contact <?= htmlspecialchars($sender['name']) ?> to arrange your exchange.
+                    <a href="mailto:<?= htmlspecialchars($sender['email'], ENT_QUOTES, 'UTF-8') ?>">Email partner</a>
                 </div>
             <?php else: ?>
                 <p class="text-muted" style="font-size:0.85rem;">You rejected this request.</p>
@@ -193,6 +202,7 @@ include __DIR__ . '/includes/header.php';
             <?php if ($req['status'] === 'accepted'): ?>
                 <div class="alert alert-success" style="margin:0.5rem 0 0; padding:0.5rem 0.85rem;">
                     🎉 <?= htmlspecialchars($receiver['name']) ?> accepted! Skill exchange is active.
+                    <a href="mailto:<?= htmlspecialchars($receiver['email'], ENT_QUOTES, 'UTF-8') ?>">Email partner</a>
                 </div>
             <?php elseif ($req['status'] === 'rejected'): ?>
                 <p class="text-muted" style="font-size:0.85rem; margin-top:0.25rem;">

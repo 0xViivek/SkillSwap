@@ -53,13 +53,14 @@ include __DIR__ . '/includes/header.php';
         <?php endif; ?>
 
         <?php if (isset($_SESSION['flash'])): ?>
-            <div class="alert alert-<?= $_SESSION['flash']['type'] ?>">
+            <div data-flash class="alert alert-<?= $_SESSION['flash']['type'] ?>">
                 <?= htmlspecialchars($_SESSION['flash']['msg']) ?>
             </div>
             <?php unset($_SESSION['flash']); ?>
         <?php endif; ?>
 
         <form method="POST" action="">
+            <?= csrfField() ?>
 
             <div class="form-group">
                 <label for="email">Email Address</label>
@@ -88,8 +89,8 @@ include __DIR__ . '/includes/header.php';
         <!-- Demo hint — remove before final presentation if needed -->
         <div class="alert alert-info mt-2" style="font-size:0.8rem;">
             <strong>Demo accounts:</strong><br>
-            Student: vivek@gmail.com / password<br>
-            Admin &nbsp;: admin@skillswap.com / password
+            Student: <?= getenv('SKILLSWAP_PUBLIC_DEMO') === '1' ? 'student@skillswap.test' : 'vivek@gmail.com' ?> / password<br>
+            Admin &nbsp;: <?= getenv('SKILLSWAP_PUBLIC_DEMO') === '1' ? 'admin@skillswap.test' : 'admin@skillswap.com' ?> / password
         </div>
 
     </div>

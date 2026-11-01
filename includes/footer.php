@@ -10,6 +10,6 @@
     <p>&copy; <?= date('Y') ?> SkillSwap &mdash; Student Skill Exchange Platform</p>
 </footer>
 
-<script src="/js/script.js"></script>
+<script src="<?= BASE_URL ?>/js/script.js"></script>
 </body>
 </html>

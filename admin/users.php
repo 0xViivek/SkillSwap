@@ -27,7 +27,7 @@ include __DIR__ . '/../includes/header.php';
 ?>
 
 <?php if (isset($_SESSION['flash'])): ?>
-    <div class="alert alert-<?= $_SESSION['flash']['type'] ?>">
+    <div data-flash class="alert alert-<?= $_SESSION['flash']['type'] ?>">
         <?= htmlspecialchars($_SESSION['flash']['msg']) ?>
     </div>
     <?php unset($_SESSION['flash']); ?>
@@ -89,6 +89,7 @@ include __DIR__ . '/../includes/header.php';
                         </td>
                         <td>
                             <form method="POST" action="" style="margin:0;">
+            <?= csrfField() ?>
                                 <input type="hidden" name="action"  value="delete">
                                 <input type="hidden" name="user_id" value="<?= $s['id'] ?>">
                                 <button type="submit" class="btn btn-danger btn-sm"

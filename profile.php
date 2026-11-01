@@ -24,7 +24,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($year < 1 || $year > 4) $errors[] = 'Year must be between 1 and 4.';
 
     if (empty($errors)) {
-        updateUser($userId, $name, $department, $year);
+        if (!updateUser($userId, $name, $department, $year)) {
+            $_SESSION['flash'] = ['type' => 'error', 'msg' => 'Could not save profile. Avoid pipes and line breaks in fields, then try again.'];
+            header('Location: ' . BASE_URL . '/profile.php');
+            exit;
+        }
         // Refresh session name
         $_SESSION['user_name'] = $name;
         $_SESSION['flash'] = ['type' => 'success', 'msg' => 'Profile updated successfully!'];
@@ -46,7 +50,7 @@ include __DIR__ . '/includes/header.php';
 ?>
 
 <?php if (isset($_SESSION['flash'])): ?>
-    <div class="alert alert-<?= $_SESSION['flash']['type'] ?>">
+    <div data-flash class="alert alert-<?= $_SESSION['flash']['type'] ?>">
         <?= htmlspecialchars($_SESSION['flash']['msg']) ?>
     </div>
     <?php unset($_SESSION['flash']); ?>
@@ -69,6 +73,7 @@ include __DIR__ . '/includes/header.php';
         <?php endif; ?>
 
         <form method="POST" action="">
+            <?= csrfField() ?>
 
             <div class="form-group">
                 <label>Full Name</label>

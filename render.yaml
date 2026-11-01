@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: skillswap-demo
+    runtime: docker
+    repo: https://github.com/0xViivek/SkillSwap
+    branch: codex/mvp-hardening
+    plan: free
+    region: singapore
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /health.php
+    envVars:
+      - key: SKILLSWAP_PUBLIC_DEMO
+        value: "1"
+      - key: SKILLSWAP_TRUST_PROXY
+        value: "1"
